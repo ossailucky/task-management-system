@@ -1,59 +1,502 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Task Management API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful API for managing tasks with user authentication built with Laravel 12 and Sanctum.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- ✅ User registration and authentication (Laravel Sanctum)
+- ✅ Complete CRUD operations for tasks
+- ✅ Task ownership validation
+- ✅ Filter tasks by status
+- ✅ Pagination support
+- ✅ Comprehensive validation and error handling
+- ✅ Feature and unit tests included
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP >= 8.2
+- Composer
+- MySQL
+- Laravel 12.x
 
-## Learning Laravel
+## Installation Steps
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. Create New Laravel 12 Project
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer create-project laravel/laravel task-management-api
+cd task-management-api
+```
 
-## Laravel Sponsors
+### 2. Install Laravel Sanctum
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer require laravel/sanctum
+php artisan install:api
+```
 
-### Premium Partners
+### 3. Environment Setup
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Edit `.env` file with your database credentials:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=task_management
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
+
+Or use SQLite for quick setup:
+```env
+DB_CONNECTION=sqlite
+# DB_DATABASE will be created automatically
+```
+
+### 4. Create Database Tables
+
+```bash
+# Create the tasks migration
+php artisan make:migration create_tasks_table
+
+# Run migrations
+php artisan migrate
+```
+
+### 5. Create Models and Controllers
+
+```bash
+# Create Task model with migration and factory
+php artisan make:model Task -mf
+
+# Create controllers
+php artisan make:controller Api/AuthController
+php artisan make:controller Api/TaskController --api
+```
+
+### 6. Start Development Server
+
+```bash
+php artisan serve
+```
+
+The API will be available at `http://localhost:8000`
+
+## API Documentation
+
+### Base URL
+```
+http://localhost:8000/api
+```
+
+### Authentication Endpoints
+
+#### Register User
+```http
+POST /api/register
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+}
+```
+
+**Response (201):**
+```json
+{
+    "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+    },
+    "token": "1|xxxxxxxxxxxx"
+}
+```
+
+#### Login
+```http
+POST /api/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+```
+
+**Response (200):**
+```json
+{
+    "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+    },
+    "token": "2|xxxxxxxxxxxx"
+}
+```
+
+#### Logout
+```http
+POST /api/logout
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+    "message": "Logged out successfully"
+}
+```
+
+### Task Endpoints
+
+All task endpoints require authentication. Include the token in the Authorization header:
+```
+Authorization: Bearer {your-token}
+```
+
+#### Get All Tasks (with pagination and filtering)
+```http
+GET /api/tasks?status=pending&page=1&per_page=10
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+- `status` (optional): Filter by status (pending, in-progress, completed)
+- `page` (optional): Page number (default: 1)
+- `per_page` (optional): Items per page (default: 15)
+
+**Response (200):**
+```json
+{
+    "data": [
+        {
+            "id": 1,
+            "title": "Complete project",
+            "description": "Finish the Laravel API",
+            "status": "pending",
+            "user_id": 1,
+            "created_at": "2024-01-01T10:00:00.000000Z",
+            "updated_at": "2024-01-01T10:00:00.000000Z"
+        }
+    ],
+    "links": {
+        "first": "http://localhost:8000/api/tasks?page=1",
+        "last": "http://localhost:8000/api/tasks?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "per_page": 15,
+        "to": 1,
+        "total": 1
+    }
+}
+```
+
+#### Create Task
+```http
+POST /api/tasks
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "title": "New Task",
+    "description": "Task description",
+    "status": "pending"
+}
+```
+
+**Response (201):**
+```json
+{
+    "id": 1,
+    "title": "New Task",
+    "description": "Task description",
+    "status": "pending",
+    "user_id": 1,
+    "created_at": "2024-01-01T10:00:00.000000Z",
+    "updated_at": "2024-01-01T10:00:00.000000Z"
+}
+```
+
+#### Get Single Task
+```http
+GET /api/tasks/{id}
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+    "id": 1,
+    "title": "New Task",
+    "description": "Task description",
+    "status": "pending",
+    "user_id": 1,
+    "created_at": "2024-01-01T10:00:00.000000Z",
+    "updated_at": "2024-01-01T10:00:00.000000Z"
+}
+```
+
+#### Update Task
+```http
+PUT /api/tasks/{id}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "title": "Updated Task",
+    "description": "Updated description",
+    "status": "in-progress"
+}
+```
+
+**Response (200):**
+```json
+{
+    "id": 1,
+    "title": "Updated Task",
+    "description": "Updated description",
+    "status": "in-progress",
+    "user_id": 1,
+    "created_at": "2024-01-01T10:00:00.000000Z",
+    "updated_at": "2024-01-01T10:30:00.000000Z"
+}
+```
+
+#### Delete Task
+```http
+DELETE /api/tasks/{id}
+Authorization: Bearer {token}
+```
+
+**Response (200):**
+```json
+{
+    "message": "Task deleted successfully"
+}
+```
+
+## Error Responses
+
+### Validation Error (422)
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "email": [
+            "The email field is required."
+        ]
+    }
+}
+```
+
+### Unauthorized (401)
+```json
+{
+    "message": "Unauthenticated."
+}
+```
+
+### Forbidden (403)
+```json
+{
+    "message": "This action is unauthorized."
+}
+```
+
+### Not Found (404)
+```json
+{
+    "message": "Task not found"
+}
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+php artisan test
+```
+
+Run specific test:
+
+```bash
+php artisan test --filter TaskControllerTest
+```
+
+Generate code coverage:
+
+```bash
+php artisan test --coverage
+```
+
+## Project Structure
+
+```
+app/
+├── Http/
+│   └── Controllers/
+│       └── Api/
+│           ├── AuthController.php
+│           └── TaskController.php
+├── Models/
+│   ├── User.php
+│   └── Task.php
+└── Policies/
+    └── TaskPolicy.php (optional)
+
+database/
+├── factories/
+│   └── TaskFactory.php
+└── migrations/
+    ├── 0001_01_01_000000_create_users_table.php
+    ├── 0001_01_01_000001_create_cache_table.php
+    ├── 0001_01_01_000002_create_jobs_table.php
+    └── 2024_01_01_000003_create_tasks_table.php
+
+routes/
+├── api.php
+└── web.php
+
+tests/
+├── Feature/
+│   ├── AuthTest.php
+│   └── TaskControllerTest.php
+└── Unit/
+    └── TaskTest.php
+```
+
+## Design Decisions
+
+### 1. **Authentication with Laravel Sanctum**
+- Native Laravel 12 support with `php artisan install:api`
+- Lightweight token-based authentication
+- Perfect for SPAs and mobile applications
+- Simpler than Passport for API-only authentication
+
+### 2. **Laravel 12 Features**
+- Utilizes improved type safety with PHP 8.2+
+- Enhanced testing capabilities
+- Better performance and security
+- Streamlined API installation process
+
+### 3. **Controller Organization**
+- Controllers placed in `App\Http\Controllers\Api` namespace
+- Clean separation of API logic
+- RESTful resource controller for tasks
+
+### 4. **Form Request Validation**
+- Inline validation in controllers for simplicity
+- Can be extracted to Form Request classes for larger projects
+- Clear and maintainable validation rules
+
+### 5. **Authorization**
+- Direct ownership checks in controller methods
+- Can be enhanced with Laravel Policies for complex scenarios
+- Ensures users only access their own tasks
+
+### 6. **Status Enum**
+- Uses Laravel's native enum validation
+- Type-safe status values
+- Easy to extend with additional statuses
+
+### 7. **Pagination**
+- Laravel's built-in pagination
+- Customizable per-page limits
+- Includes metadata for frontend implementation
+
+### 8. **Error Handling**
+- Consistent JSON responses
+- Proper HTTP status codes
+- Descriptive error messages
+
+## Laravel 12 Specific Features Used
+
+- ✅ `php artisan install:api` - Sanctum setup
+- ✅ Improved type declarations
+- ✅ Enhanced testing framework
+- ✅ Better error handling
+- ✅ Streamlined middleware configuration
+
+## Security Considerations
+
+- ✅ Password hashing with bcrypt
+- ✅ CSRF protection (API uses token auth)
+- ✅ SQL injection protection (Eloquent ORM)
+- ✅ Mass assignment protection
+- ✅ Authorization checks
+- ✅ Rate limiting (configurable)
+- ✅ API token management
+
+## Future Enhancements
+
+- [ ] Task categories and tags
+- [ ] Due dates and reminders
+- [ ] Task priority levels
+- [ ] Task assignment to multiple users
+- [ ] File attachments
+- [ ] Task comments and activity logs
+- [ ] Email notifications
+- [ ] API versioning
+- [ ] Soft deletes with restoration
+- [ ] Task search functionality
+- [ ] Export tasks (CSV, PDF)
+
+## Troubleshooting
+
+### Issue: "SQLSTATE[HY000] [2002] Connection refused"
+**Solution:** Check if your database service is running and credentials in `.env` are correct.
+
+### Issue: Sanctum tokens not working
+**Solution:** 
+1. Ensure you've run `php artisan install:api`
+2. Check that `personal_access_tokens` table exists
+3. Verify token is sent in Authorization header
+
+### Issue: CORS errors in frontend
+**Solution:** Configure CORS in `config/cors.php` or use Laravel Sanctum's SPA authentication
+
+### Issue: Tests failing
+**Solution:** 
+1. Use separate test database
+2. Run `php artisan migrate --env=testing`
+3. Check `phpunit.xml` configuration
+
+## Performance Tips
+
+1. **Database Indexing**: Add indexes to frequently queried columns
+2. **Eager Loading**: Use `with()` to prevent N+1 queries
+3. **Caching**: Implement Redis for frequently accessed data
+4. **Queue Jobs**: Use queues for heavy tasks
+5. **API Rate Limiting**: Protect against abuse
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the MIT license.
+
+## Author
+
+Built with ❤️ using Laravel 12
+
+## Contact
+
+For questions or support, please open an issue in the GitHub repository.
