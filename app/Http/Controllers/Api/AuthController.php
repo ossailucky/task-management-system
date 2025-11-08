@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,33 +13,40 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    use ApiResponse;
     /**
      * Register a new user.
      */
     public function register(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'password' => ['required', 'confirmed', Password::defaults()],
+            ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-            'token' => $token,
-        ], 201);
+            return $this->createdResponse([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+                'token' => $token,
+            ], 'User registered successfully');
+        } catch (ValidationException $e) {
+            return $this->validationErrorResponse($e->errors(), 'Registration failed');
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse('An error occurred during registration');
+        }
     }
 
     /**
@@ -46,32 +54,36 @@ class AuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+        try {
+            $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required'],
             ]);
+
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return $this->unauthorizedResponse('The provided credentials are incorrect');
+            }
+
+            // Revoke old tokens (optional - for single device login)
+            // $user->tokens()->delete();
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return $this->successResponse([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+                'token' => $token,
+            ], 'Login successful');
+        } catch (ValidationException $e) {
+            return $this->validationErrorResponse($e->errors(), 'Login failed');
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse('An error occurred during login');
         }
-
-        // Revoke old tokens (optional - for single device login)
-        // $user->tokens()->delete();
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-            'token' => $token,
-        ]);
     }
 
     /**
@@ -79,11 +91,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        try {
+            $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
+            return $this->successResponse(null, 'Logged out successfully');
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse('An error occurred during logout');
+        }
     }
 
     /**
@@ -91,8 +105,12 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        return response()->json([
-            'user' => $request->user(),
-        ]);
+        try {
+            return $this->successResponse([
+                'user' => $request->user(),
+            ], 'User details retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse('An error occurred while retrieving user details');
+        }
     }
 }

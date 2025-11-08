@@ -30,8 +30,11 @@ class TaskControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'id', 'title', 'description', 'status', 'user_id', 'created_at', 'updated_at',
-            ]);
+                'success',
+                'message',
+                'data' => ['id', 'title', 'description', 'status', 'user_id', 'created_at', 'updated_at'],
+            ])
+            ->assertJson(['success' => true]);
 
         $this->assertDatabaseHas('tasks', [
             'title' => 'Test Task',
@@ -49,6 +52,7 @@ class TaskControllerTest extends TestCase
         ]);
 
         $response->assertStatus(422)
+            ->assertJson(['success' => false])
             ->assertJsonValidationErrors(['title']);
     }
 
@@ -112,9 +116,17 @@ class TaskControllerTest extends TestCase
         $response = $this->getJson("/api/tasks/{$task->id}");
 
         $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data',
+            ])
             ->assertJson([
-                'id' => $task->id,
-                'title' => $task->title,
+                'success' => true,
+                'data' => [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                ],
             ]);
     }
 
@@ -126,7 +138,8 @@ class TaskControllerTest extends TestCase
 
         $response = $this->getJson("/api/tasks/{$task->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(403)
+            ->assertJson(['success' => false]);
     }
 
     public function test_user_can_update_their_task(): void
@@ -141,8 +154,11 @@ class TaskControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'title' => 'Updated Title',
-                'status' => 'in-progress',
+                'success' => true,
+                'data' => [
+                    'title' => 'Updated Title',
+                    'status' => 'in-progress',
+                ],
             ]);
 
         $this->assertDatabaseHas('tasks', [
@@ -166,8 +182,11 @@ class TaskControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'title' => 'Original Title',
-                'status' => 'completed',
+                'success' => true,
+                'data' => [
+                    'title' => 'Original Title',
+                    'status' => 'completed',
+                ],
             ]);
     }
 
@@ -181,7 +200,8 @@ class TaskControllerTest extends TestCase
             'title' => 'Hacked Title',
         ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(403)
+            ->assertJson(['success' => false]);
     }
 
     public function test_user_can_delete_their_task(): void
@@ -192,7 +212,10 @@ class TaskControllerTest extends TestCase
         $response = $this->deleteJson("/api/tasks/{$task->id}");
 
         $response->assertStatus(200)
-            ->assertJson(['message' => 'Task deleted successfully']);
+            ->assertJson([
+                'success' => true,
+                'message' => 'Task deleted successfully'
+            ]);
 
         $this->assertDatabaseMissing('tasks', [
             'id' => $task->id,
@@ -207,7 +230,8 @@ class TaskControllerTest extends TestCase
 
         $response = $this->deleteJson("/api/tasks/{$task->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(403)
+            ->assertJson(['success' => false]);
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
@@ -224,6 +248,7 @@ class TaskControllerTest extends TestCase
         ]);
 
         $response->assertStatus(422)
+            ->assertJson(['success' => false])
             ->assertJsonValidationErrors(['status']);
     }
 
@@ -264,6 +289,7 @@ class TaskControllerTest extends TestCase
         $response = $this->getJson('/api/tasks?per_page=200');
 
         $response->assertStatus(422)
+            ->assertJson(['success' => false])
             ->assertJsonValidationErrors(['per_page']);
     }
 

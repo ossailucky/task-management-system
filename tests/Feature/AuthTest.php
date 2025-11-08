@@ -21,9 +21,14 @@ class AuthTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'user' => ['id', 'name', 'email'],
-                'token',
-            ]);
+                'success',
+                'message',
+                'data' => [
+                    'user' => ['id', 'name', 'email'],
+                    'token',
+                ],
+            ])
+            ->assertJson(['success' => true]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
@@ -44,6 +49,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(422)
+            ->assertJson(['success' => false])
             ->assertJsonValidationErrors(['email']);
     }
 
@@ -57,6 +63,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(422)
+            ->assertJson(['success' => false])
             ->assertJsonValidationErrors(['password']);
     }
 
@@ -73,9 +80,14 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'user' => ['id', 'name', 'email'],
-                'token',
-            ]);
+                'success',
+                'message',
+                'data' => [
+                    'user' => ['id', 'name', 'email'],
+                    'token',
+                ],
+            ])
+            ->assertJson(['success' => true]);
     }
 
     public function test_user_cannot_login_with_invalid_credentials(): void
@@ -89,8 +101,8 @@ class AuthTest extends TestCase
             'password' => 'wrongpassword',
         ]);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(401)
+            ->assertJson(['success' => false]);
     }
 
     public function test_user_can_logout(): void
@@ -103,7 +115,10 @@ class AuthTest extends TestCase
         ])->postJson('/api/logout');
 
         $response->assertStatus(200)
-            ->assertJson(['message' => 'Logged out successfully']);
+            ->assertJson([
+                'success' => true,
+                'message' => 'Logged out successfully'
+            ]);
     }
 
     public function test_user_can_get_their_profile(): void
@@ -117,12 +132,17 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'user' => ['id', 'name', 'email'],
+                'success',
+                'message',
+                'data' => ['user'],
             ])
             ->assertJson([
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'email' => $user->email,
+                    ],
                 ],
             ]);
     }

@@ -4,13 +4,13 @@ A RESTful API for managing tasks with user authentication built with Laravel 12 
 
 ## Features
 
-- ✅ User registration and authentication (Laravel Sanctum)
-- ✅ Complete CRUD operations for tasks
-- ✅ Task ownership validation
-- ✅ Filter tasks by status
-- ✅ Pagination support
-- ✅ Comprehensive validation and error handling
-- ✅ Feature and unit tests included
+-  User registration and authentication (Laravel Sanctum)
+-  Complete CRUD operations for tasks
+-  Task ownership validation
+-  Filter tasks by status
+-  Pagination support
+-  Comprehensive validation and error handling
+-  Feature and unit tests included
 
 ## Requirements
 
@@ -174,6 +174,7 @@ Authorization: Bearer {token}
 **Response (200):**
 ```json
 {
+    "current_page": 1,
     "data": [
         {
             "id": 1,
@@ -185,20 +186,33 @@ Authorization: Bearer {token}
             "updated_at": "2024-01-01T10:00:00.000000Z"
         }
     ],
-    "links": {
-        "first": "http://localhost:8000/api/tasks?page=1",
-        "last": "http://localhost:8000/api/tasks?page=1",
-        "prev": null,
-        "next": null
-    },
-    "meta": {
-        "current_page": 1,
-        "from": 1,
-        "last_page": 1,
-        "per_page": 15,
-        "to": 1,
-        "total": 1
-    }
+    "first_page_url": "http://localhost:8000/api/tasks?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://localhost:8000/api/tasks?page=1",
+    "links": [
+        {
+            "url": null,
+            "label": "&laquo; Previous",
+            "active": false
+        },
+        {
+            "url": "http://localhost:8000/api/tasks?page=1",
+            "label": "1",
+            "active": true
+        },
+        {
+            "url": null,
+            "label": "Next &raquo;",
+            "active": false
+        }
+    ],
+    "next_page_url": null,
+    "path": "http://localhost:8000/api/tasks",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 1,
+    "total": 1
 }
 ```
 
@@ -341,41 +355,7 @@ Generate code coverage:
 php artisan test --coverage
 ```
 
-## Project Structure
 
-```
-app/
-├── Http/
-│   └── Controllers/
-│       └── Api/
-│           ├── AuthController.php
-│           └── TaskController.php
-├── Models/
-│   ├── User.php
-│   └── Task.php
-└── Policies/
-    └── TaskPolicy.php (optional)
-
-database/
-├── factories/
-│   └── TaskFactory.php
-└── migrations/
-    ├── 0001_01_01_000000_create_users_table.php
-    ├── 0001_01_01_000001_create_cache_table.php
-    ├── 0001_01_01_000002_create_jobs_table.php
-    └── 2024_01_01_000003_create_tasks_table.php
-
-routes/
-├── api.php
-└── web.php
-
-tests/
-├── Feature/
-│   ├── AuthTest.php
-│   └── TaskControllerTest.php
-└── Unit/
-    └── TaskTest.php
-```
 
 ## Design Decisions
 
@@ -423,80 +403,18 @@ tests/
 
 ## Laravel 12 Specific Features Used
 
-- ✅ `php artisan install:api` - Sanctum setup
-- ✅ Improved type declarations
-- ✅ Enhanced testing framework
-- ✅ Better error handling
-- ✅ Streamlined middleware configuration
+-  `php artisan install:api` - Sanctum setup
+-  Improved type declarations
+-  Enhanced testing framework
+-  Better error handling
+-  Streamlined middleware configuration
 
 ## Security Considerations
 
-- ✅ Password hashing with bcrypt
-- ✅ CSRF protection (API uses token auth)
-- ✅ SQL injection protection (Eloquent ORM)
-- ✅ Mass assignment protection
-- ✅ Authorization checks
-- ✅ Rate limiting (configurable)
-- ✅ API token management
-
-## Future Enhancements
-
-- [ ] Task categories and tags
-- [ ] Due dates and reminders
-- [ ] Task priority levels
-- [ ] Task assignment to multiple users
-- [ ] File attachments
-- [ ] Task comments and activity logs
-- [ ] Email notifications
-- [ ] API versioning
-- [ ] Soft deletes with restoration
-- [ ] Task search functionality
-- [ ] Export tasks (CSV, PDF)
-
-## Troubleshooting
-
-### Issue: "SQLSTATE[HY000] [2002] Connection refused"
-**Solution:** Check if your database service is running and credentials in `.env` are correct.
-
-### Issue: Sanctum tokens not working
-**Solution:** 
-1. Ensure you've run `php artisan install:api`
-2. Check that `personal_access_tokens` table exists
-3. Verify token is sent in Authorization header
-
-### Issue: CORS errors in frontend
-**Solution:** Configure CORS in `config/cors.php` or use Laravel Sanctum's SPA authentication
-
-### Issue: Tests failing
-**Solution:** 
-1. Use separate test database
-2. Run `php artisan migrate --env=testing`
-3. Check `phpunit.xml` configuration
-
-## Performance Tips
-
-1. **Database Indexing**: Add indexes to frequently queried columns
-2. **Eager Loading**: Use `with()` to prevent N+1 queries
-3. **Caching**: Implement Redis for frequently accessed data
-4. **Queue Jobs**: Use queues for heavy tasks
-5. **API Rate Limiting**: Protect against abuse
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is open-sourced software licensed under the MIT license.
-
-## Author
-
-Built with ❤️ using Laravel 12
-
-## Contact
-
-For questions or support, please open an issue in the GitHub repository.
+-  Password hashing with bcrypt
+-  CSRF protection (API uses token auth)
+-  SQL injection protection (Eloquent ORM)
+-  Mass assignment protection
+-  Authorization checks
+-  Rate limiting (configurable)
+-  API token management
