@@ -1,4 +1,4 @@
-# Laravel Task Management API
+# Task Management API
 
 A RESTful API for managing tasks with user authentication built with Laravel 12 and Sanctum.
 
@@ -48,11 +48,7 @@ DB_USERNAME=root
 DB_PASSWORD=your_password
 ```
 
-Or use SQLite for quick setup:
-```env
-DB_CONNECTION=sqlite
-# DB_DATABASE will be created automatically
-```
+
 
 ### 4. Create Database Tables
 
