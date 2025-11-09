@@ -26,9 +26,9 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
+    
+      // Register the exception handling callbacks for the application.
+    
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
@@ -36,9 +36,9 @@ class Handler extends ExceptionHandler
         });
     }
 
-    /**
-     * Render an exception into an HTTP response.
-     */
+    
+     // Render an exception into an HTTP response.
+     
     public function render($request, Throwable $e): mixed
     {
         // Handle API requests
@@ -49,9 +49,9 @@ class Handler extends ExceptionHandler
         return parent::render($request, $e);
     }
 
-    /**
-     * Handle API exceptions and return JSON responses.
-     */
+    
+     // Handle API exceptions and return JSON responses.
+     
     protected function handleApiException($request, Throwable $exception): JsonResponse
     {
         $exception = $this->prepareException($exception);
@@ -144,9 +144,9 @@ class Handler extends ExceptionHandler
         ], $statusCode);
     }
 
-    /**
-     * Convert an authentication exception into a response.
-     */
+    
+     // Convert an authentication exception into a response.
+     
     protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|\Illuminate\Http\Response
     {
         if ($request->expectsJson()) {

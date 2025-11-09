@@ -14,9 +14,9 @@ use Illuminate\Validation\ValidationException;
 class TaskController extends Controller
 {
     use ApiResponse;
-    /**
-     * Display a listing of the user's tasks.
-     */
+    
+     // Display a listing of the user's tasks.
+     
     public function index(Request $request): JsonResponse
     {
         try {
@@ -46,9 +46,9 @@ class TaskController extends Controller
         }
     }
 
-    /**
-     * Store a newly created task.
-     */
+    
+     // Store a newly created task.
+     
     public function store(Request $request): JsonResponse
     {
         try {
@@ -68,9 +68,9 @@ class TaskController extends Controller
         }
     }
 
-    /**
-     * Display the specified task.
-     */
+    
+     // Display the specified task.
+     
     public function show(Request $request, Task $task): JsonResponse
     {
         try {
@@ -87,9 +87,9 @@ class TaskController extends Controller
         }
     }
 
-    /**
-     * Update the specified task.
-     */
+    
+     // Update the specified task.
+     
     public function update(Request $request, Task $task): JsonResponse
     {
         try {
@@ -116,9 +116,9 @@ class TaskController extends Controller
         }
     }
 
-    /**
-     * Remove the specified task.
-     */
+    
+     // Remove the specified task.
+     
     public function destroy(Request $request, Task $task): JsonResponse
     {
         try {

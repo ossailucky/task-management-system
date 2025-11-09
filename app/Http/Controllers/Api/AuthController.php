@@ -14,9 +14,9 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     use ApiResponse;
-    /**
-     * Register a new user.
-     */
+    
+     // Register a new user.
+     
     public function register(Request $request): JsonResponse
     {
         try {
@@ -49,9 +49,9 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Login user and create token.
-     */
+    
+     // Login user and create token.
+     
     public function login(Request $request): JsonResponse
     {
         try {
@@ -66,8 +66,7 @@ class AuthController extends Controller
                 return $this->unauthorizedResponse('The provided credentials are incorrect');
             }
 
-            // Revoke old tokens (optional - for single device login)
-            // $user->tokens()->delete();
+            
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -86,9 +85,9 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Logout user (Revoke the token).
-     */
+    
+     // Logout user (Revoke the token).
+     
     public function logout(Request $request): JsonResponse
     {
         try {
@@ -100,9 +99,9 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Get authenticated user details.
-     */
+    
+     // Get authenticated user details.
+     
     public function me(Request $request): JsonResponse
     {
         try {
