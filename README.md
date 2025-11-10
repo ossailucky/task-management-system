@@ -353,7 +353,7 @@ php artisan test --coverage
 
 
 
-## Design Decisions
+## Design Decisions Made
 
 ### 1. **Authentication with Laravel Sanctum**
 - Native Laravel 12 support with `php artisan install:api`
